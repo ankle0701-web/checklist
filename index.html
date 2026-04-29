@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>의사소통-아파요</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E63946">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="아파요">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #E63946; --red-light: #fdecea; --red-dark: #b02030;
+    --bg: #F5F0EB; --card: #ffffff; --text: #1a1a1a; --muted: #888;
+  }
+  html, body {
+    height: 100%; background: var(--bg);
+    font-family: 'Noto Sans KR', sans-serif; color: var(--text);
+    overflow-x: hidden;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; padding: 1.2rem 1rem 2.5rem;
+  }
+  header { text-align: center; margin-bottom: 1rem; }
+  header h1 { font-size: clamp(20px, 5vw, 28px); font-weight: 900; letter-spacing: -0.5px; }
+  header p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .guide-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--red-light); color: var(--red-dark);
+    font-size: 13px; font-weight: 700; padding: 6px 14px;
+    border-radius: 100px; margin-top: 8px;
+    animation: pulse-chip 2s ease-in-out infinite;
+  }
+  @keyframes pulse-chip { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+
+  .body-wrap { position: relative; width: min(240px, 68vw); flex-shrink: 0; }
+  .body-wrap svg { width: 100%; height: auto; display: block; }
+
+  .hz {
+    position: absolute;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    transition: background 0.1s, border-color 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    cursor: pointer;
+    user-select: none;
+  }
+  .hz.active {
+    background: rgba(230,57,70,0.28) !important;
+    border-color: var(--red);
+  }
+
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.38); z-index: 100;
+    justify-content: center; align-items: center; padding: 2rem;
+  }
+  .overlay.show { display: flex; }
+
+  .pain-card {
+    background: var(--card); border-radius: 24px;
+    padding: 2rem 1.8rem 1.8rem; text-align: center;
+    max-width: 300px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+    animation: pop-in 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes pop-in { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .pain-face { font-size: 70px; line-height: 1; margin-bottom: 0.7rem; }
+  .pain-text { font-size: clamp(22px,6vw,30px); font-weight: 900; color: var(--red); margin-bottom: 0.3rem; }
+  .pain-sub { font-size: 15px; color: var(--muted); margin-bottom: 1.6rem; }
+
+  .sound-wave {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; height: 32px; margin-bottom: 1.4rem;
+  }
+  .wave-bar {
+    width: 6px; background: var(--red); border-radius: 3px;
+    animation: wave 0.7s ease-in-out infinite;
+  }
+  .wave-bar:nth-child(1){ height:12px; animation-delay:0s; }
+  .wave-bar:nth-child(2){ height:24px; animation-delay:0.1s; }
+  .wave-bar:nth-child(3){ height:32px; animation-delay:0.2s; }
+  .wave-bar:nth-child(4){ height:24px; animation-delay:0.1s; }
+  .wave-bar:nth-child(5){ height:12px; animation-delay:0s; }
+  @keyframes wave {
+    0%,100%{ transform: scaleY(0.4); opacity:0.5; }
+    50%{ transform: scaleY(1); opacity:1; }
+  }
+
+  .close-btn {
+    width: 100%; padding: 14px;
+    background: #f0f0f0; color: #555;
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer; touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  footer { margin-top: 1.2rem; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>몸 어디가 아파요?</h1>
+  <p>아픈 곳을 눌러보세요</p>
+  <div class="guide-chip"><span>👆</span><span>누르면 소리가 나요</span></div>
+</header>
+
+<div class="body-wrap" id="bodyWrap">
+  <svg viewBox="0 0 220 430" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="110" cy="48" rx="36" ry="40" fill="#FDDBB4" stroke="#C99060" stroke-width="1.5"/>
+    <ellipse cx="74" cy="50" rx="8" ry="12" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+    <ellipse cx="146" cy="50" rx="8" ry="12" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+    <path d="M95 37 Q103 33 111 37" stroke="#8B6040" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M109 37 Q117 33 125 37" stroke="#8B6040" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="100" cy="44" rx="5" ry="5.5" fill="#fff" stroke="#aaa" stroke-width="0.8"/>
+    <circle cx="100" cy="45" r="3" fill="#3a2a1a"/>
+    <circle cx="101.5" cy="43.5" r="1" fill="#fff"/>
+    <ellipse cx="120" cy="44" rx="5" ry="5.5" fill="#fff" stroke="#aaa" stroke-width="0.8"/>
+    <circle cx="120" cy="45" r="3" fill="#3a2a1a"/>
+    <circle cx="121.5" cy="43.5" r="1" fill="#fff"/>
+    <path d="M108 54 Q110 60 112 54" stroke="#C99060" stroke-width="1.5" fill="none"/>
+    <path d="M100 63 Q110 70 120 63" stroke="#C07050" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="88" cy="58" rx="8" ry="5" fill="#F4A0A0" opacity="0.4"/>
+    <ellipse cx="132" cy="58" rx="8" ry="5" fill="#F4A0A0" opacity="0.4"/>
+    <path d="M74 30 Q90 10 110 8 Q130 10 146 30" fill="#5C3A1E"/>
+    <ellipse cx="110" cy="8" rx="36" ry="12" fill="#5C3A1E"/>
+    <rect x="100" y="86" width="20" height="20" rx="5" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+    <rect x="68" y="104" width="84" height="118" rx="18" fill="#A8DADC" stroke="#457B9D" stroke-width="1.5"/>
+    <line x1="110" y1="104" x2="110" y2="222" stroke="#457B9D" stroke-width="1" opacity="0.4"/>
+    <rect x="33" y="106" width="36" height="68" rx="16" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <rect x="151" y="106" width="36" height="68" rx="16" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <rect x="33" y="172" width="36" height="56" rx="14" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <rect x="151" y="172" width="36" height="56" rx="14" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <ellipse cx="51" cy="240" rx="19" ry="14" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+    <ellipse cx="169" cy="240" rx="19" ry="14" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+    <rect x="72" y="220" width="76" height="50" rx="12" fill="#8ecfc4" stroke="#2D9E75" stroke-width="1.3"/>
+    <rect x="72" y="267" width="34" height="72" rx="14" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <rect x="114" y="267" width="34" height="72" rx="14" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <rect x="72" y="337" width="34" height="56" rx="12" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <rect x="114" y="337" width="34" height="56" rx="12" fill="#FDDBB4" stroke="#C99060" stroke-width="1.3"/>
+    <ellipse cx="89" cy="400" rx="24" ry="11" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+    <ellipse cx="131" cy="400" rx="24" ry="11" fill="#FDDBB4" stroke="#C99060" stroke-width="1.2"/>
+  </svg>
+
+  <div class="hz" style="left:48%;top:2%;width:36%;height:19%;transform:translateX(-50%);" data-part="머리" data-face="😣"></div>
+  <div class="hz" style="left:50%;top:21%;width:13%;height:6%;transform:translateX(-50%);border-radius:8px;" data-part="목" data-face="😟"></div>
+  <div class="hz" style="left:50%;top:27%;width:44%;height:14%;transform:translateX(-50%);border-radius:14px;" data-part="가슴" data-face="😖"></div>
+  <div class="hz" style="left:50%;top:40%;width:44%;height:13%;transform:translateX(-50%);border-radius:14px;" data-part="배" data-face="😣"></div>
+  <div class="hz" style="left:50%;top:52%;width:44%;height:11%;transform:translateX(-50%);border-radius:12px;" data-part="허리" data-face="😩"></div>
+  <div class="hz" style="left:7%;top:26%;width:18%;height:14%;border-radius:12px;" data-part="왼쪽 어깨" data-face="😔"></div>
+  <div class="hz" style="right:7%;top:26%;width:18%;height:14%;border-radius:12px;" data-part="오른쪽 어깨" data-face="😔"></div>
+  <div class="hz" style="left:7%;top:39%;width:18%;height:13%;border-radius:12px;" data-part="왼쪽 팔" data-face="😟"></div>
+  <div class="hz" style="right:7%;top:39%;width:18%;height:13%;border-radius:12px;" data-part="오른쪽 팔" data-face="😟"></div>
+  <div class="hz" style="left:7%;top:52%;width:18%;height:8%;" data-part="왼쪽 손" data-face="😖"></div>
+  <div class="hz" style="right:7%;top:52%;width:18%;height:8%;" data-part="오른쪽 손" data-face="😖"></div>
+  <div class="hz" style="left:26%;top:63%;width:20%;height:15%;border-radius:12px;" data-part="왼쪽 다리" data-face="😣"></div>
+  <div class="hz" style="right:26%;top:63%;width:20%;height:15%;border-radius:12px;" data-part="오른쪽 다리" data-face="😣"></div>
+  <div class="hz" style="left:26%;top:77%;width:20%;height:8%;border-radius:50%;" data-part="왼쪽 무릎" data-face="😩"></div>
+  <div class="hz" style="right:26%;top:77%;width:20%;height:8%;border-radius:50%;" data-part="오른쪽 무릎" data-face="😩"></div>
+  <div class="hz" style="left:26%;top:84%;width:20%;height:9%;border-radius:10px;" data-part="왼쪽 종아리" data-face="😟"></div>
+  <div class="hz" style="right:26%;top:84%;width:20%;height:9%;border-radius:10px;" data-part="오른쪽 종아리" data-face="😟"></div>
+  <div class="hz" style="left:26%;top:92%;width:20%;height:7%;border-radius:50%;" data-part="왼쪽 발" data-face="😔"></div>
+  <div class="hz" style="right:26%;top:92%;width:20%;height:7%;border-radius:50%;" data-part="오른쪽 발" data-face="😔"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="pain-card" id="painCard">
+    <div class="pain-face" id="painFace">😣</div>
+    <div class="pain-text" id="painText">머리가 아파요!</div>
+    <div class="pain-sub">선생님께 보여주세요</div>
+    <div class="sound-wave">
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+    </div>
+    <button class="close-btn" id="closeBtn">확인 ✓</button>
+  </div>
+</div>
+
+<footer>
+  지적장애인 의사소통 보조 도구<br>
+  아픈 곳을 누르면 소리로 알려줘요
+</footer>
+
+<script>
+// 목소리 미리 로드
+var voices = [];
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+}
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR';
+  u.rate = 0.82;
+  u.pitch = 1.05;
+  u.volume = 1;
+  var koVoice = voices.find(function(v){ return v.lang.startsWith('ko'); });
+  if (koVoice) u.voice = koVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// 신체 부위: 손가락 닿는 순간 팝업 + 소리 동시에
+document.querySelectorAll('.hz').forEach(function(el) {
+  function trigger(e) {
+    e.preventDefault();
+    el.classList.add('active');
+    setTimeout(function(){ el.classList.remove('active'); }, 300);
+
+    var part = el.getAttribute('data-part');
+    document.getElementById('painFace').textContent = el.getAttribute('data-face') || '😣';
+    document.getElementById('painText').textContent = part + '이(가) 아파요!';
+    document.getElementById('overlay').classList.add('show');
+
+    speak(part + '이 아파요. 선생님 도와주세요.');
+  }
+  el.addEventListener('touchstart', trigger, { passive: false });
+  el.addEventListener('mousedown', trigger);
+});
+
+// 닫기
+var closeBtn = document.getElementById('closeBtn');
+function doClose(e) {
+  e.preventDefault();
+  document.getElementById('overlay').classList.remove('show');
+  window.speechSynthesis && window.speechSynthesis.cancel();
+}
+closeBtn.addEventListener('touchstart', doClose, { passive: false });
+closeBtn.addEventListener('mousedown', doClose);
+
+document.getElementById('overlay').addEventListener('touchstart', function(e){
+  if (e.target === this) doClose(e);
+}, { passive: false });
+document.getElementById('overlay').addEventListener('mousedown', function(e){
+  if (e.target === this) doClose(e);
+});
+
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') doClose(e); });
+</script>
+</body>
+</html>
